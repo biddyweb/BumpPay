@@ -1,9 +1,11 @@
 package com.bump.apitest;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -68,7 +70,7 @@ public class BumpTest extends Activity
                     Toast.makeText(getApplicationContext(), "Matched with: " + api.userIDForChannelID(channelID), Toast.LENGTH_SHORT).show();
                     api.confirm(channelID, true);
                     //Toast("Bump Test", "Confirm sent");
-                    Toast.makeText(getApplicationContext(), "Confirm sent", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "Confirm sent", Toast.LENGTH_SHORT).show();
                 } else if (action.equals(BumpAPIIntents.CHANNEL_CONFIRMED)) {
                     final long channelID = intent.getLongExtra("channelID", 0);
                     //Toast("Bump Test", "Channel confirmed with " + api.userIDForChannelID(channelID));
@@ -79,17 +81,22 @@ public class BumpTest extends Activity
                     
                     
                     
-                    final Button button = (Button) findViewById(R.id.button2);
+                     Button button = (Button) findViewById(R.id.button2);
                     button.setOnClickListener(new View.OnClickListener() {
                         public void onClick(View v) {
-                        	try {
-                        		EditText editText = (EditText) findViewById(R.id.editText1);
-                                String message = editText.getText().toString();
-								api.send(channelID, message.getBytes());
-							} catch (RemoteException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+                        	
+							
+                        
+							            	EditText txt = (EditText) findViewById(R.id.editText1);
+											String message = txt.getText().toString();
+							            	
+												try {
+													api.send(channelID, message.getBytes());
+												} catch (RemoteException e) {
+													// TODO Auto-generated catch block
+													e.printStackTrace();
+												}
+                   
                         }
                     });
                 } else if (action.equals(BumpAPIIntents.NOT_MATCHED)) {
@@ -117,25 +124,27 @@ public class BumpTest extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
+        final Context context = this;
        
         
         final Button button = (Button) findViewById(R.id.button1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	 bindService(new Intent(IBumpAPI.class.getName()), connection, Context.BIND_AUTO_CREATE);
+            	 
+            	 IntentFilter filter = new IntentFilter();
+                 filter.addAction(BumpAPIIntents.CHANNEL_CONFIRMED);
+                 filter.addAction(BumpAPIIntents.DATA_RECEIVED);
+                 filter.addAction(BumpAPIIntents.NOT_MATCHED);
+                 filter.addAction(BumpAPIIntents.MATCHED);
+                 filter.addAction(BumpAPIIntents.CONNECTED);
+                 registerReceiver(receiver, filter);
             }
         });
         //Toast.makeText(getApplicationContext(), "boot", Toast.LENGTH_SHORT).show();
         //Toast("BumpTest", "boot");
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BumpAPIIntents.CHANNEL_CONFIRMED);
-        filter.addAction(BumpAPIIntents.DATA_RECEIVED);
-        filter.addAction(BumpAPIIntents.NOT_MATCHED);
-        filter.addAction(BumpAPIIntents.MATCHED);
-        filter.addAction(BumpAPIIntents.CONNECTED);
-        registerReceiver(receiver, filter);
+        
     }
 
      public void onStart() {
